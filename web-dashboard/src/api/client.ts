@@ -78,5 +78,5 @@ export const api = {
 
 /** True when the failure is a network/offline problem (as opposed to a domain error). */
 export function isNetworkError(err: unknown): boolean {
-  return err instanceof TypeError || (err instanceof ApiError && err.status >= 500);
+  return err instanceof TypeError || (err instanceof ApiError && (err.status >= 500 || err.status === 404));
 }
