@@ -1,0 +1,559 @@
+openapi: 3.1.0
+info:
+  title: WasteFlow — Galle District Solid Waste Operations & Monitoring System
+  version: 1.0.0
+  description: |
+    PROPOSED REST API for the WasteFlow prototype. This specification does not assert
+    current practice at Monroviawatta or any LGA. All mutations accept a `clientGeneratedId`
+    used as an idempotency key so offline mobile retries cannot create duplicates.
+  license:
+    name: Prototype — for evaluation
+servers:
+  - url: https://api.wasteflow.example/api
+    description: Production (example)
+  - url: http://10.0.2.2:3000/api
+    description: Local development (Android emulator host)
+
+tags:
+  - name: Auth
+  - name: MasterData
+  - name: Trips
+  - name: Collections
+  - name: Loads
+  - name: Receiving
+  - name: Processing
+  - name: Transfers
+  - name: Exceptions
+  - name: Dashboard
+  - name: Reports
+  - name: Audit
+  - name: Health
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate and obtain tokens
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string, format: password }
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - properties:
+                      data: { $ref: '#/components/schemas/LoginResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Exchange a refresh token for new tokens
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200': { description: New tokens }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Invalidate the current refresh token
+      responses:
+        '200': { description: Logged out }
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Current user profile and permissions
+      responses:
+        '200':
+          description: Profile
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - properties:
+                      data: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /vehicles:
+    get:
+      tags: [MasterData]
+      summary: List vehicles
+      responses:
+        '200': { description: Vehicles }
+
+  /routes:
+    get:
+      tags: [MasterData]
+      summary: List routes
+      responses:
+        '200': { description: Routes }
+
+  /lgas:
+    get:
+      tags: [MasterData]
+      summary: List Local Government Authorities
+      responses:
+        '200': { description: LGAs }
+
+  /trips:
+    get:
+      tags: [Trips]
+      summary: List trips
+      parameters:
+        - { in: query, name: from, schema: { type: string, format: date-time } }
+        - { in: query, name: to, schema: { type: string, format: date-time } }
+        - { in: query, name: lgaId, schema: { type: string, format: uuid } }
+        - { in: query, name: vehicleId, schema: { type: string, format: uuid } }
+        - { in: query, name: status, schema: { $ref: '#/components/schemas/TripStatus' } }
+      responses:
+        '200': { description: Trips }
+    post:
+      tags: [Trips]
+      summary: Create a trip (rejects a second active trip for the same vehicle)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StartTripRequest' }
+      responses:
+        '201': { description: Trip created }
+        '409': { description: Vehicle already has an active trip }
+
+  /trips/{id}:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [Trips]
+      summary: Trip detail with collections and load
+      responses:
+        '200': { description: Trip }
+    patch:
+      tags: [Trips]
+      summary: Update limited trip fields
+      responses:
+        '200': { description: Updated }
+
+  /trips/{id}/start:
+    post:
+      tags: [Trips]
+      summary: Start a trip (sets start time, status IN_PROGRESS)
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Started }
+
+  /trips/{id}/complete:
+    post:
+      tags: [Trips]
+      summary: Complete a trip and generate the load + QR payload
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Load generated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - properties:
+                      data: { $ref: '#/components/schemas/Load' }
+        '422': { description: Trip has no collections or no start time }
+
+  /trips/{id}/collections:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [Collections]
+      summary: List collections for a trip
+      responses:
+        '200': { description: Collections }
+    post:
+      tags: [Collections]
+      summary: Record a collection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCollectionRequest' }
+      responses:
+        '201': { description: Collection created }
+
+  /loads:
+    get:
+      tags: [Loads]
+      summary: List loads
+      responses:
+        '200': { description: Loads }
+
+  /loads/search:
+    get:
+      tags: [Loads]
+      summary: Search loads (Load ID, vehicle, date, LGA, facility, shipment)
+      parameters:
+        - { in: query, name: q, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Matching loads }
+
+  /loads/{id}:
+    get:
+      tags: [Loads]
+      summary: Load detail
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Load }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /loads/{id}/trace:
+    get:
+      tags: [Loads]
+      summary: Full movement timeline (actor + timestamp per step)
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Trace timeline }
+
+  /loads/{id}/receive:
+    post:
+      tags: [Receiving]
+      summary: Receive a load (reason required if declared != received)
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReceiveLoadRequest' }
+      responses:
+        '200': { description: Load received }
+        '409': { description: Load already received }
+        '422': { description: Validation error (e.g. missing discrepancy reason) }
+
+  /receipts:
+    get:
+      tags: [Receiving]
+      summary: List receipts
+      responses:
+        '200': { description: Receipts }
+
+  /loads/{id}/process:
+    post:
+      tags: [Processing]
+      summary: Record processing allocation (sum must equal received unless incomplete)
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProcessLoadRequest' }
+      responses:
+        '200': { description: Processing recorded }
+        '422': { description: Allocation does not reconcile }
+
+  /compost-batches:
+    get:
+      tags: [Processing]
+      summary: List compost batches
+      responses:
+        '200': { description: Batches }
+    post:
+      tags: [Processing]
+      summary: Create a compost batch
+      responses:
+        '201': { description: Batch created }
+
+  /transfers:
+    get:
+      tags: [Transfers]
+      summary: List transfer shipments
+      responses:
+        '200': { description: Shipments }
+    post:
+      tags: [Transfers]
+      summary: Create a transfer shipment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateTransferRequest' }
+      responses:
+        '201': { description: Shipment created }
+
+  /transfers/{id}/receive:
+    post:
+      tags: [Transfers]
+      summary: Destination confirmation (else status stays AWAITING_CONFIRMATION)
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Shipment receipt recorded }
+
+  /exceptions:
+    get:
+      tags: [Exceptions]
+      summary: List exceptions
+      parameters:
+        - { in: query, name: status, schema: { type: string } }
+        - { in: query, name: severity, schema: { type: string } }
+      responses:
+        '200': { description: Exceptions }
+
+  /exceptions/{id}:
+    patch:
+      tags: [Exceptions]
+      summary: Assign or resolve an exception
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Updated }
+
+  /reconciliation:
+    get:
+      tags: [Dashboard]
+      summary: Declared / received / allocated / unaccounted variances
+      parameters:
+        - { in: query, name: from, schema: { type: string, format: date } }
+        - { in: query, name: to, schema: { type: string, format: date } }
+        - { in: query, name: lgaId, schema: { type: string, format: uuid } }
+        - { in: query, name: facilityId, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Reconciliation figures }
+
+  /dashboard/summary:
+    get:
+      tags: [Dashboard]
+      summary: Headline KPIs
+      responses:
+        '200':
+          description: Summary
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - properties:
+                      data: { $ref: '#/components/schemas/DashboardSummary' }
+
+  /dashboard/capacity:
+    get:
+      tags: [Dashboard]
+      summary: Reference capacity vs recorded (capacity is a configurable administrative value)
+      responses:
+        '200': { description: Capacity figures }
+
+  /reports/{type}:
+    get:
+      tags: [Reports]
+      summary: Generate a report (daily, monthly, vehicles, lgas, processing, transfers, exceptions, data-quality, traceability)
+      parameters:
+        - { in: path, name: type, required: true, schema: { type: string } }
+        - { in: query, name: format, schema: { type: string, enum: [json, csv, xlsx, pdf] } }
+        - { in: query, name: from, schema: { type: string, format: date } }
+        - { in: query, name: to, schema: { type: string, format: date } }
+        - { in: query, name: lgaId, schema: { type: string, format: uuid } }
+        - { in: query, name: facilityId, schema: { type: string, format: uuid } }
+        - { in: query, name: category, schema: { type: string } }
+      responses:
+        '200': { description: Report }
+
+  /audit-logs:
+    get:
+      tags: [Audit]
+      summary: Read audit logs (read-only; no delete endpoint exists)
+      responses:
+        '200': { description: Audit entries }
+
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness
+      security: []
+      responses:
+        '200': { description: OK }
+
+  /health/ready:
+    get:
+      tags: [Health]
+      summary: Readiness (DB + storage)
+      security: []
+      responses:
+        '200': { description: Ready }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  security:
+    - bearerAuth: []
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  schemas:
+    SuccessEnvelope:
+      type: object
+      properties:
+        success: { type: boolean, const: true }
+        data: {}
+        message: { type: string }
+    ErrorEnvelope:
+      type: object
+      properties:
+        success: { type: boolean, const: false }
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            field: { type: string }
+
+    TripStatus:
+      type: string
+      enum: [DRAFT, IN_PROGRESS, COMPLETED, SUBMITTED, CANCELLED]
+    LoadStatus:
+      type: string
+      enum: [SUBMITTED, ARRIVED, RECEIVED, PROCESSING, COMPLETED, EXCEPTION, CANCELLED]
+    WasteCategory:
+      type: string
+      enum: [BIODEGRADABLE, NON_BIODEGRADABLE, MIXED, RECYCLABLE, OTHER, UNKNOWN]
+    MeasurementMethod:
+      type: string
+      enum: [WEIGHBRIDGE, SCALE, MANUAL_ESTIMATE, VEHICLE_CAPACITY_ESTIMATE, OTHER, UNKNOWN]
+
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        username: { type: string }
+        email: { type: string, nullable: true }
+        role: { type: string }
+        lgaId: { type: string, format: uuid, nullable: true }
+        facilityId: { type: string, format: uuid, nullable: true }
+
+    LoginResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        user: { $ref: '#/components/schemas/User' }
+
+    StartTripRequest:
+      type: object
+      required: [clientGeneratedId, vehicleId, lgaId]
+      properties:
+        clientGeneratedId: { type: string, description: Idempotency key }
+        vehicleId: { type: string, format: uuid }
+        routeId: { type: string, format: uuid, nullable: true }
+        lgaId: { type: string, format: uuid }
+        sourceArea: { type: string, nullable: true }
+
+    CreateCollectionRequest:
+      type: object
+      required: [clientGeneratedId, locationDescription, wasteCategory, measurementMethod, quantityKg]
+      properties:
+        clientGeneratedId: { type: string }
+        locationDescription: { type: string }
+        wasteCategory: { $ref: '#/components/schemas/WasteCategory' }
+        measurementMethod: { $ref: '#/components/schemas/MeasurementMethod' }
+        quantityKg: { type: number, minimum: 0 }
+        latitude: { type: number, nullable: true }
+        longitude: { type: number, nullable: true }
+        notes: { type: string, nullable: true }
+
+    Load:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        loadCode: { type: string, example: LD-20260920-00001 }
+        declaredQuantityKg: { type: number }
+        wasteCategory: { $ref: '#/components/schemas/WasteCategory' }
+        measurementMethod: { $ref: '#/components/schemas/MeasurementMethod' }
+        status: { $ref: '#/components/schemas/LoadStatus' }
+        receivedQuantityKg: { type: number, nullable: true }
+        discrepancyFlag: { type: boolean }
+        discrepancyReason: { type: string, nullable: true }
+
+    ReceiveLoadRequest:
+      type: object
+      required: [receivedQuantityKg, measurementMethod]
+      properties:
+        receivedQuantityKg: { type: number, minimum: 0 }
+        measurementMethod: { $ref: '#/components/schemas/MeasurementMethod' }
+        condition: { type: string, nullable: true }
+        discrepancyReason:
+          type: string
+          nullable: true
+          description: Required when receivedQuantityKg differs from declaredQuantityKg
+        notes: { type: string, nullable: true }
+
+    ProcessLoadRequest:
+      type: object
+      required: [compostKg, landfillKg, transferKg, otherKg]
+      properties:
+        compostKg: { type: number, minimum: 0 }
+        landfillKg: { type: number, minimum: 0 }
+        transferKg: { type: number, minimum: 0 }
+        otherKg: { type: number, minimum: 0 }
+        incomplete: { type: boolean, default: false }
+        notes: { type: string, nullable: true }
+
+    CreateTransferRequest:
+      type: object
+      required: [sourceFacilityId, destinationName, quantityKg]
+      properties:
+        sourceFacilityId: { type: string, format: uuid }
+        destinationName: { type: string }
+        containerNumber: { type: string, nullable: true }
+        quantityKg: { type: number, minimum: 0 }
+        dispatchTime: { type: string, format: date-time, nullable: true }
+        loadIds:
+          type: array
+          items: { type: string, format: uuid }
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalLoadsToday: { type: integer }
+        totalRecordedKg: { type: number }
+        totalReceivedKg: { type: number }
+        totalProcessedKg: { type: number }
+        totalTransferredKg: { type: number }
+        openExceptions: { type: integer }
