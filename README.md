@@ -1,280 +1,708 @@
-# WasteFlow
+<div align="center">
 
-**Galle District Solid Waste Operations & Monitoring System**
+# ♻️ WASTEFLOW
 
-> A **proposed** digital information system designed to improve traceability, reconciliation, monitoring and reporting of solid-waste movements between Local Government Authorities (LGAs) and the Monroviawatta Solid Waste Management Centre (Rajgama).
+### **Galle District Solid Waste Operations & Monitoring System**
+
+<p>
+  <img src="https://img.shields.io/badge/Status-Portfolio%20Prototype-7C3AED?style=for-the-badge" alt="Status">
+  <img src="https://img.shields.io/badge/React-TypeScript-06B6D4?style=for-the-badge&logo=react&logoColor=white" alt="React">
+  <img src="https://img.shields.io/badge/Node.js-Express-22C55E?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js">
+  <img src="https://img.shields.io/badge/PostgreSQL-Database-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">
+</p>
+
+<p>
+  <a href="https://kavigamage-da.github.io/wasteflow/">
+    <img src="https://img.shields.io/badge/🚀%20LIVE%20DEMO-Open%20WasteFlow-8B5CF6?style=for-the-badge" alt="Live Demo">
+  </a>
+  &nbsp;
+  <a href="https://github.com/kavigamage-da/wasteflow">
+    <img src="https://img.shields.io/badge/Source-GitHub-18181B?style=for-the-badge&logo=github" alt="GitHub">
+  </a>
+</p>
+
+<p>
+  <strong>Turning fragmented waste operations into a traceable, measurable workflow.</strong>
+</p>
+
+<br>
+
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:7C3AED,50:06B6D4,100:22C55E&height=120&section=header" width="100%"/>
+
+</div>
 
 ---
 
-## ⚠️ Government Deployment Disclaimer
+## 🎯 The Problem
 
-**THIS IS A DEMONSTRATION/PORTFOLIO PROJECT. NOT PRODUCTION SOFTWARE.**
+Solid-waste operations involve multiple stages:
 
-WasteFlow is a software engineering demonstration and portfolio project. It is **NOT** approved, certified, or ready for government deployment. Before any government or institutional deployment, the following must be completed:
+**Collection → Transport → Receiving → Processing → Transfer / Disposal → Reporting**
 
-- **Security Audit**: Comprehensive penetration testing by certified security professionals
-- **Compliance Review**: Review against relevant government IT standards and regulations
-- **Legal Review**: Compliance with data protection, privacy, and accessibility laws
-- **Stakeholder Approval**: Formal approval from all relevant government authorities
-- **Production Hardening**: Additional security measures, monitoring, and operational procedures
-- **Disaster Recovery**: Complete backup, recovery, and business continuity planning
-- **Performance Testing**: Load testing and scalability validation
-- **User Acceptance Testing**: Real-world testing with actual operational staff
+When operational information is fragmented across different records and workflows, it becomes harder to answer basic management questions:
 
-The demo data in this system is **synthetic** and must never be presented as real operational data. Demo credentials are for demonstration purposes only.
+* Where did a load originate?
+* How much material was declared?
+* How much was actually received?
+* Where did the received material go?
+* Were there quantity variances?
+* Which operational exceptions require attention?
+* Can management trace a load across its complete lifecycle?
+
+**WasteFlow** explores how a centralized digital workflow could connect these operational stages through common identifiers, reconciliation rules, dashboards, exception handling, and traceability.
 
 ---
 
-## What this package is
+## ✨ What WasteFlow Demonstrates
 
-This is the **design & documentation package** for WasteFlow — a complete, implementation-ready specification consisting of:
+<div align="center">
 
-| Area | Location |
-|---|---|
-| **Backend API** (Node.js · TypeScript · Express · PostgreSQL) | `backend/` |
-| **Web dashboard** (React · TypeScript · Vite · Recharts) | `web-dashboard/` |
-| **Android field app** (Kotlin · Compose · Room · offline-first) | `../wasteflow-android/` |
-| Project documentation (18 documents) | `docs/` |
-| PostgreSQL schema (DDL, constraints, indexes) | `database/schema.sql` |
-| Demo/seed data (clearly labelled synthetic) | `database/seed.sql` |
-| REST API specification (OpenAPI 3.1) | `api/openapi.yaml` |
-| API endpoint reference (human-readable) | `docs/11-api.md` |
-| ER diagram (text) | `docs/10-database.md` |
+|    🔄 Operations   |     📊 Analytics    |  🔎 Traceability | 🛡️ Governance |
+| :----------------: | :-----------------: | :--------------: | :------------: |
+| Collection & Trips |   Operational KPIs  |   Load Tracking  |      RBAC      |
+|   Load Management  |       Reports       | Chain of Custody |   Audit Logs   |
+|      Receiving     | Executive Dashboard | Movement History |   Validation   |
+|     Processing     |    Trend Analysis   |  Reconciliation  |   Exceptions   |
 
-## Run the full system
+</div>
+
+---
+
+## 🚀 Live Demo
+
+### **[→ Open WasteFlow Live Demo](https://kavigamage-da.github.io/wasteflow/)**
+
+The public demo runs as a frontend portfolio demonstration using **synthetic data**.
+
+### Demo Accounts
+
+| Role                          | Username     | Password        |
+| ----------------------------- | ------------ | --------------- |
+| 🚚 Driver                     | `driver`     | `driver123`     |
+| 👥 Collection Supervisor      | `supervisor` | `super123`      |
+| 🏭 Facility Receiving Officer | `receiving`  | `receiving123`  |
+| ♻️ Processing Officer         | `processing` | `processing123` |
+| 📋 Officer                    | `officer`    | `officer123`    |
+| 🛡️ Administrator             | `admin`      | `admin123`      |
+
+> **Demo credentials are intentionally provided for portfolio evaluation.**
+
+---
+
+## 🧭 Explore the Workflow
+
+```text
+┌──────────────┐
+│  COLLECTION  │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│  TRANSPORT   │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│  RECEIVING   │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│  PROCESSING  │
+└──────┬───────┘
+       │
+       ├───────────────┐
+       ▼               ▼
+┌──────────────┐  ┌──────────────┐
+│   TRANSFER   │  │   DISPOSAL   │
+└──────┬───────┘  └──────┬───────┘
+       │                  │
+       └────────┬─────────┘
+                ▼
+       ┌─────────────────┐
+       │    REPORTING    │
+       └─────────────────┘
+```
+
+Every major operational stage is connected through a shared digital workflow rather than being treated as an isolated screen.
+
+---
+
+# 📦 Core Modules
+
+### 📊 Dashboard
+
+A centralized operational view containing:
+
+* Key operational indicators
+* Load statistics
+* Processing information
+* Exceptions
+* Recent activity
+* Trend visualizations
+
+---
+
+### 🚛 Trips
+
+Track collection and transportation activities through:
+
+* Trip records
+* Vehicle information
+* Driver information
+* Collection activity
+* Operational status
+* Trip history
+
+---
+
+### ⚖️ Loads
+
+Manage the movement of waste using a consistent **Load ID**.
+
+Key concepts include:
+
+* Declared quantity
+* Received quantity
+* Variance
+* Processing allocation
+* Transfer allocation
+* Completion status
+
+---
+
+### 🏭 Receiving
+
+The receiving stage connects transportation with facility operations.
+
+The system demonstrates:
+
+```text
+Declared Weight
+      ↓
+Received Weight
+      ↓
+Variance Calculation
+      ↓
+Reconciliation
+      ↓
+Operational Status
+```
+
+---
+
+### ♻️ Processing
+
+Track how received material is allocated into processing outcomes such as:
+
+* Compost
+* Landfill
+* Other processing destinations
+
+---
+
+### 🚚 Transfers
+
+Track material leaving the facility through transfer operations.
+
+---
+
+### 🔗 Traceability
+
+The traceability module connects the lifecycle of a load:
+
+```text
+Load ID
+   ↓
+Trip
+   ↓
+Collection
+   ↓
+Receiving
+   ↓
+Processing
+   ↓
+Transfer / Disposal
+```
+
+This creates a single operational story around a load instead of disconnected records.
+
+---
+
+### 📈 Reports
+
+Provide analytical views for:
+
+* Operational activity
+* Loads
+* Quantities
+* Processing
+* Transfers
+* Exceptions
+* Reconciliation
+
+---
+
+### ⚠️ Exceptions
+
+Highlight operational conditions that require attention, such as:
+
+* Quantity variances
+* Incomplete records
+* Reconciliation issues
+* Workflow exceptions
+
+---
+
+### 🧾 Audit Logs
+
+Record important system activities to support operational accountability and traceability.
+
+---
+
+### 🧠 Executive Dashboard
+
+A higher-level view designed around management questions:
+
+> **What is happening?**
+
+> **Where are the exceptions?**
+
+> **How much material moved through the system?**
+
+> **Where should attention be directed?**
+
+---
+
+# 🧪 Golden Demonstration Scenario
+
+WasteFlow includes a consistent synthetic demonstration scenario:
+
+### `LD-DEMO-001`
+
+| Metric          |         Value |
+| --------------- | ------------: |
+| Declared        |  **2,600 kg** |
+| Received        |  **2,550 kg** |
+| Variance        |     **50 kg** |
+| Compost         |  **1,700 kg** |
+| Landfill        |    **650 kg** |
+| Transfer        |    **200 kg** |
+| Total Allocated |  **2,550 kg** |
+| Unaccounted     |      **0 kg** |
+| Status          | **COMPLETED** |
+
+### Reconciliation Logic
+
+```text
+Received
+  2,550 kg
+      │
+      ├── Compost ────── 1,700 kg
+      │
+      ├── Landfill ─────── 650 kg
+      │
+      └── Transfer ─────── 200 kg
+                         ───────
+                          2,550 kg
+
+Unaccounted = 0 kg
+```
+
+This scenario demonstrates how WasteFlow can connect **receiving → processing → transfer** while maintaining quantity reconciliation.
+
+---
+
+# 🏗️ System Architecture
+
+```text
+                    ┌─────────────────────────┐
+                    │      WasteFlow Web      │
+                    │   React + TypeScript    │
+                    │    Vite + Recharts      │
+                    └────────────┬────────────┘
+                                 │
+                                 ▼
+                    ┌─────────────────────────┐
+                    │      REST API Layer     │
+                    │   Node.js + Express     │
+                    │      JWT + Zod          │
+                    └────────────┬────────────┘
+                                 │
+                                 ▼
+                    ┌─────────────────────────┐
+                    │       PostgreSQL        │
+                    │   Operational Database  │
+                    └─────────────────────────┘
+```
+
+### Portfolio Demo Architecture
+
+The public GitHub Pages version uses a frontend demo mode so the interface can be explored without requiring the separate backend and database to be running.
+
+```text
+PUBLIC DEMO
+
+Browser
+   │
+   ▼
+React / Vite
+   │
+   ▼
+Demo Data Layer
+   │
+   └── Synthetic Dataset
+```
+
+The backend architecture remains available for local/full-stack development.
+
+---
+
+# 🛠️ Technology Stack
+
+### Frontend
+
+![React](https://img.shields.io/badge/React-2026-61DAFB?style=flat-square\&logo=react\&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square\&logo=typescript\&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7.x-646CFF?style=flat-square\&logo=vite\&logoColor=white)
+![Recharts](https://img.shields.io/badge/Recharts-Visualization-8884D8?style=flat-square)
+
+### Backend
+
+![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=flat-square\&logo=node.js\&logoColor=white)
+![JWT](https://img.shields.io/badge/Auth-JWT-black?style=flat-square)
+![Zod](https://img.shields.io/badge/Validation-Zod-3E67B1?style=flat-square)
+
+### Database
+
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square\&logo=postgresql\&logoColor=white)
+
+### Development
+
+![Git](https://img.shields.io/badge/Git-Version%20Control-F05032?style=flat-square\&logo=git\&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF?style=flat-square\&logo=githubactions\&logoColor=white)
+
+---
+
+# 🔐 Security & Governance Concepts
+
+WasteFlow demonstrates security and governance concepts including:
+
+* Role-based access control
+* JWT-based authentication architecture
+* Password hashing
+* Input validation
+* API request validation
+* Audit logging
+* Role-aware navigation
+* Operational exception handling
+* Controlled workflow transitions
+
+These are demonstrated as **prototype architecture and implementation concepts**, not as certification or production-security claims.
+
+---
+
+# 👥 Role Model
+
+```text
+                    ┌───────────────┐
+                    │     ADMIN     │
+                    └───────┬───────┘
+                            │
+             ┌──────────────┼──────────────┐
+             │              │              │
+             ▼              ▼              ▼
+       SUPERVISOR       OFFICER       OPERATIONS
+                                          │
+                         ┌────────────────┼───────────────┐
+                         ▼                ▼               ▼
+                      DRIVER          RECEIVING        PROCESSING
+```
+
+Each role represents a different operational responsibility within the proposed workflow.
+
+---
+
+# 📁 Repository Structure
+
+```text
+wasteflow/
+│
+├── backend/
+│   ├── src/
+│   ├── tests/
+│   └── ...
+│
+├── web-dashboard/
+│   ├── src/
+│   ├── public/
+│   ├── package.json
+│   └── vite.config.ts
+│
+├── database/
+│   └── ...
+│
+├── api/
+│   └── ...
+│
+├── docs/
+│   └── ...
+│
+└── README.md
+```
+
+---
+
+# 🔄 Development Approach
+
+WasteFlow was designed around a workflow-first approach:
+
+```text
+01  DISCOVER
+     ↓
+02  DEFINE
+     ↓
+03  MODEL
+     ↓
+04  PRIORITIZE
+     ↓
+05  DESIGN
+     ↓
+06  BUILD
+     ↓
+07  VALIDATE
+     ↓
+08  IMPROVE
+```
+
+The goal is not simply to build screens, but to connect:
+
+**Business Process → Data → Workflow → Controls → Analytics**
+
+---
+
+# 📊 Key Design Principles
+
+### 01 — Traceability First
+
+Every important operational movement should be connected to an identifiable record.
+
+### 02 — Reconciliation
+
+Declared, received, processed, transferred, and remaining quantities should be logically reconcilable.
+
+### 03 — Exception Visibility
+
+Problems should become visible rather than disappearing inside disconnected records.
+
+### 04 — Role Awareness
+
+Different operational responsibilities should have appropriate system access.
+
+### 05 — Decision Support
+
+Dashboards should answer operational and management questions rather than simply display data.
+
+### 06 — Evidence-Based Design
+
+The prototype distinguishes between verified information, assumptions, and proposed system capabilities.
+
+---
+
+# 🧩 Business Analysis Perspective
+
+WasteFlow is also a **Business Analysis / Product Thinking case study**.
+
+The project explores:
+
+| BA Area              | WasteFlow Application              |
+| -------------------- | ---------------------------------- |
+| Problem Analysis     | Fragmented operational information |
+| Stakeholder Thinking | Multiple operational roles         |
+| Process Analysis     | Collection → Reporting             |
+| Requirements         | Functional & non-functional needs  |
+| Data Analysis        | Quantity and operational metrics   |
+| Business Rules       | Reconciliation & workflow rules    |
+| Exception Management | Variance & operational issues      |
+| Product Thinking     | Role-specific workflows            |
+| Decision Support     | Executive dashboards               |
+| Validation           | Synthetic scenario testing         |
+
+---
+
+# 📚 Evidence Boundary
+
+WasteFlow is intentionally separated into three categories:
+
+### 🟢 Verified
+
+Information supported by available public documentation or project evidence.
+
+### 🟡 Unverified
+
+Operational details that would require direct validation with relevant authorities or stakeholders.
+
+### 🔵 Proposed
+
+Features, workflows, dashboards, and digital capabilities designed as part of this prototype.
+
+This distinction is important because **WasteFlow is a proposed portfolio system, not a claim that this software is currently deployed by a government institution.**
+
+---
+
+# ⚠️ Important Disclaimer
+
+> **WasteFlow is a portfolio prototype / demonstration system.**
+>
+> It is **not an officially deployed government platform** and should not be interpreted as an existing operational system of a government authority.
+>
+> The public demonstration uses **synthetic data** for illustration and testing.
+>
+> Any real-world deployment would require stakeholder validation, requirements confirmation, security review, infrastructure assessment, data governance, and formal authorization.
+
+---
+
+# 🚀 Running Locally
+
+### 1. Clone
 
 ```bash
-# 1) Database
-cd backend && docker compose up -d db           # or point DATABASE_URL at any PostgreSQL
-cp .env.example .env                             # set DATABASE_URL + JWT secrets
-
-# 2) Backend
-npm install && npm run migrate && npm run seed
-npm run dev                                      # http://localhost:3000
-
-# 3) Web dashboard (separate terminal)
-cd ../web-dashboard && npm install && npm run dev   # http://localhost:5173 (proxies /api)
-
-# 4) Android app — open ../wasteflow-android in Android Studio and Run
+git clone https://github.com/kavigamage-da/wasteflow.git
+cd wasteflow
 ```
 
-Demo accounts (synthetic): `driver/driver123` · `supervisor/super123` · `receiving/receiving123` ·
-`processing/processing123` · `officer/officer123` · `admin/admin123`.
+### 2. Frontend
 
-## Build verification
+```bash
+cd web-dashboard
+npm install
+npm run dev
+```
 
-| Component | Verification | Result |
-|---|---|---|
-| Backend | `tsc --noEmit` + run against PostgreSQL 15, 18 API scenarios | ✅ pass |
-| Web dashboard | `npm run build` (tsc + vite build) | ✅ pass |
-| Android app | `./gradlew :app:assembleDebug` (JDK 17, AGP 8.7.3) | ✅ `app-debug.apk` |
+### 3. Backend
 
-See [`../wasteflow-android/BUILD-VERIFIED.md`](../wasteflow-android/BUILD-VERIFIED.md).
+```bash
+cd backend
+npm install
+npm run dev
+```
 
-## System verification status (2026-09-22)
-
-**VERIFIED — DEMONSTRATION READY**
-
-All high-priority verification and demonstration tasks completed. The system is ready for stakeholder presentation.
-
-### Verification Completed (37/40 tasks)
-
-- ✅ Authentication & JWT flow
-- ✅ RBAC for all roles
-- ✅ Complete operational workflow (Trip→Load→Receive→Process)
-- ✅ Load traceability (LD-DEMO-001)
-- ✅ Quantity reconciliation (2,550 kg allocated)
-- ✅ Discrepancy management (50 kg difference)
-- ✅ Data quality engine
-- ✅ Audit logging
-- ✅ Dashboard calculations (5 questions answered)
-- ✅ Capacity monitoring (REFERENCE CAPACITY labeled)
-- ✅ Reports generation (6 report types)
-- ✅ Search/filter/sort functionality
-- ✅ Android offline-first sync
-- ✅ Frontend error handling (professional messages)
-- ✅ Security hardening (bcrypt, parameterized queries, JWT)
-- ✅ Database integrity (referential integrity verified)
-- ✅ API routes tested (8+ endpoints)
-- ✅ Health check endpoint
-- ✅ Demo mode indicator (professional UI)
-- ✅ Golden load demonstration (complete scenario)
-- ✅ Role demonstration scripts (6 roles)
-- ✅ All demo login accounts verified
-- ✅ UI consistency verified
-- ✅ Offline demonstration capability
-- ✅ Audit demonstration
-- ✅ Data quality demonstration
-- ✅ VERIFIED/UNVERIFIED/PROPOSED boundaries maintained
-- ✅ Stakeholder presentation document created
-- ✅ System architecture documented
-- ✅ Database documentation verified
-- ✅ API documentation verified
-- ✅ Startup guide verified
-- ✅ Final smoke test passed
-- ✅ Browser console check passed
-- ✅ Backend log check passed
-- ✅ Final security check passed
-- ✅ Documentation package verified
-
-### Pending (Low Priority)
-
-- ⏸️ Create/repair test suite (manual verification performed)
-- ⏸️ Performance inspection (not required for demonstration)
-- ⏸️ Accessibility audit (basic semantic HTML used)
-
-### Documentation
-
-- [`EVIDENCE_AND_ASSUMPTIONS.md`](EVIDENCE_AND_ASSUMPTIONS.md) — Detailed verification evidence
-- [`FINAL_IMPLEMENTATION_REPORT.md`](FINAL_IMPLEMENTATION_REPORT.md) — Complete implementation report
-- [`STARTUP_GUIDE.md`](STARTUP_GUIDE.md) — Step-by-step startup instructions
-- [`DEMO_SCENARIO.md`](DEMO_SCENARIO.md) — Complete demonstration scenario
-- [`STAKEHOLDER_PRESENTATION.md`](STAKEHOLDER_PRESENTATION.md) — Professional stakeholder overview
-
-It is intended to support: academic demonstration, software-engineering evaluation, operational pilot discussion, stakeholder review, future field validation, and potential institutional deployment **after proper approval and verification**.
+Refer to the project documentation for the complete backend/database configuration.
 
 ---
 
-## The single most important rule
+# 🧪 Demo Journey
 
-WasteFlow is a **proposed TO-BE** operational information system. It **must never** present documented facts, unverified assumptions and proposed functionality as if they were the same thing.
+For the quickest evaluation:
 
-See [`docs/01-evidence-and-assumptions.md`](docs/01-evidence-and-assumptions.md). Every document in this package classifies its content as:
+```text
+LOGIN
+  ↓
+DASHBOARD
+  ↓
+TRIPS
+  ↓
+LOADS
+  ↓
+RECEIVING
+  ↓
+PROCESSING
+  ↓
+TRANSFERS
+  ↓
+TRACEABILITY
+  ↓
+REPORTS
+  ↓
+EXCEPTIONS
+  ↓
+AUDIT LOGS
+  ↓
+EXECUTIVE
+```
 
-- **VERIFIED** — supported by public research.
-- **UNVERIFIED** — current operational practice that requires field/internal confirmation.
-- **PROPOSED** — functionality designed by WasteFlow.
+### Recommended starting account
 
-**WasteFlow does not claim** that Monroviawatta currently has no software, no registers, no weighbridge, that staff use paper or Excel, that vehicles have GPS, that every crew has a smartphone, or that the current workflow matches the design below. Those items are not publicly verified.
+```text
+Username: admin
+Password: admin123
+```
+
+Then explore the role-specific accounts to understand how the workflow changes across operational responsibilities.
 
 ---
 
-## Problem in one paragraph
+# 🎥 Product Walkthrough
 
-Waste-management information may be generated at multiple stages — collection, transport, facility receiving, processing and transfer — but management needs a consistent way to connect those records, reconcile quantities and produce reliable operational reports. WasteFlow gives every load a unique identity and a connected chain:
+<div align="center">
 
-```
-Trip → Load → Receipt → Processing → Transfer / Final Outcome
-```
+### From collection to decision support
 
----
+**COLLECT**
+↓
+**TRANSPORT**
+↓
+**RECEIVE**
+↓
+**RECONCILE**
+↓
+**PROCESS**
+↓
+**TRANSFER**
+↓
+**TRACE**
+↓
+**ANALYZE**
+↓
+**DECIDE**
 
-## Target data flow (MVP)
-
-```
-COLLECT → RECORD → IDENTIFY → TRANSPORT → RECEIVE
-   → RECONCILE → PROCESS → TRANSFER / FINAL OUTCOME
-   → REPORT → AUDIT
-```
-
-Central value proposition:
-
-- Every important waste movement has a digital record.
-- Every quantity has a measurement method.
-- Every important handoff has confirmation.
-- Every discrepancy is visible.
-- Every correction is auditable.
-- Every management report is traceable back to operational records.
-
----
-
-## System users (RBAC)
-
-1. System Administrator
-2. Provincial Officer
-3. LGA / SWM Officer
-4. Collection Supervisor
-5. Driver / Collection Crew (mobile)
-6. Facility Receiving Officer
-7. Facility Processing Operator
-8. Facility Manager
-
-See [`docs/03-stakeholders.md`](docs/03-stakeholders.md) and [`docs/04-requirements.md`](docs/04-requirements.md).
+</div>
 
 ---
 
-## Proposed architecture
+# 🌐 Links
 
-```
-ANDROID MOBILE APP  (Kotlin, Jetpack Compose, Room, WorkManager)
-       │  REST / HTTPS (JWT)
-       ▼
-BACKEND API SERVER  (Node.js, TypeScript, NestJS/Express)
-       ├──────────────► PostgreSQL
-       └──────────────► File Storage (attachments)
-       ▼
-WEB MANAGEMENT DASHBOARD  (React, TypeScript, Recharts/ECharts)
-```
+<div align="center">
 
-See [`docs/09-architecture.md`](docs/09-architecture.md).
+### 🚀 Live Application
 
----
+**[Open WasteFlow Demo](https://kavigamage-da.github.io/wasteflow/)**
 
-## Documentation index
+### 💻 Source Code
 
-| # | Document | Purpose |
-|---|---|---|
-| 00 | [problem-statement.md](docs/00-problem-statement.md) | The information-management problem |
-| 01 | [evidence-and-assumptions.md](docs/01-evidence-and-assumptions.md) | VERIFIED / UNVERIFIED / PROPOSED register |
-| 02 | [scope.md](docs/02-scope.md) | In / out of scope, boundaries |
-| 03 | [stakeholders.md](docs/03-stakeholders.md) | Users, roles, responsibilities |
-| 04 | [requirements.md](docs/04-requirements.md) | Functional & non-functional requirements |
-| 05 | [user-stories.md](docs/05-user-stories.md) | Role-based user stories + acceptance criteria |
-| 06 | [use-cases.md](docs/06-use-cases.md) | Detailed use cases |
-| 07 | [process-flow.md](docs/07-process-flow.md) | AS-IS uncertainty / TO-BE process flow |
-| 08 | [to-be-workflow.md](docs/08-to-be-workflow.md) | TO-BE workflow states and transitions |
-| 09 | [architecture.md](docs/09-architecture.md) | Technical architecture |
-| 10 | [database.md](docs/10-database.md) | Data model + ER diagram |
-| 11 | [api.md](docs/11-api.md) | REST endpoint reference |
-| 12 | [ui-ux.md](docs/12-ui-ux.md) | Design system + screens |
-| 13 | [security.md](docs/13-security.md) | Security, privacy, audit |
-| 14 | [offline-sync.md](docs/14-offline-sync.md) | Offline-first + sync engine |
-| 15 | [testing.md](docs/15-testing.md) | Test strategy + scenarios |
-| 16 | [deployment.md](docs/16-deployment.md) | Environments, backup, ops |
-| 17 | [user-manual.md](docs/17-user-manual.md) | Task-based operator guide |
+**[View Repository](https://github.com/kavigamage-da/wasteflow)**
+
+### 👤 Portfolio
+
+**[Kavindi Gamage](https://github.com/kavigamage-da)**
+
+</div>
 
 ---
 
-## Demo scenario (synthetic)
+# 👤 Project
 
-All figures below are **DEMO DATA**, not real Monroviawatta operational data.
+**Kavindi Gamage**
 
-```
-LGA:       Galle MC
-Vehicle:   DEMO-001
-Trip:      TR-DEMO-001
-Load:      LD-DEMO-001
-Declared:  2,600 kg
-Received:  2,550 kg   (50 kg discrepancy → Exception)
-Compost:   1,700 kg
-Landfill:    650 kg
-Transfer:    200 kg   (= 2,550 kg allocated)
-```
+BA (Hons) Information Technology
+University of Ruhuna, Sri Lanka
 
-See [`database/seed.sql`](database/seed.sql) and [`docs/15-testing.md`](docs/15-testing.md) Scenario 3.
+**Focus Areas**
+
+`Business Analysis` · `Data Analytics` · `Product Thinking` · `Front-End Development` · `AI/ML`
 
 ---
 
-## Boundaries
+<div align="center">
 
-- **e-Sabha** — citizen complaints (separate system). Possible future integration only.
-- **e-Pura Neguma** — general local-government administration.
-- **WasteFlow** — operational waste movement, receiving, processing, reconciliation and monitoring.
+### Built to explore a simple idea:
 
-WasteFlow does not claim to replace existing systems. See [`docs/02-scope.md`](docs/02-scope.md).
+# **Better data → Better visibility → Better decisions**
 
----
+<br>
 
-## Deployment path
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:22C55E,50:06B6D4,100:7C3AED&height=120&section=footer" width="100%"/>
 
-```
-Development → Staging → User Acceptance Testing → Production
-```
+**WasteFlow · Portfolio Demonstration · Synthetic Data**
 
-See [`docs/16-deployment.md`](docs/16-deployment.md).
-
----
-
-## Status
-
-Design package — **not yet field-validated**. MVP scope is deliberately limited to reliable operational data capture (`Trip → Load → Receiving → Processing → Transfer → Dashboard → Report`). No AI, blockchain, advanced GPS, IoT or predictive analytics in the MVP. See [`docs/02-scope.md`](docs/02-scope.md) and [`docs/04-requirements.md`](docs/04-requirements.md) §Future.
+</div>
