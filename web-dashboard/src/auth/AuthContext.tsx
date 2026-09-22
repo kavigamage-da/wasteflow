@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import { api, getStoredUser, getToken, isNetworkError, setStoredUser, setToken } from '../api/client';
+import { api, getStoredUser, getToken, setStoredUser, setToken } from '../api/client';
 import type { LoginResponse, User } from '../api/types';
 
 interface AuthState {
@@ -29,9 +29,17 @@ const DEMO_PASSWORDS: Record<string, string> = {
   admin: 'admin123'
 };
 
+// Check if demo mode is enabled via environment variable
+const IS_DEMO_MODE_BUILD = import.meta.env.VITE_DEMO_MODE === 'true';
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => getStoredUser<User>());
-  const [demoMode, setDemoMode] = useState<boolean>(() => getToken() === 'demo-token');
+  const [demoMode, setDemoMode] = useState<boolean>(() => {
+    // Demo mode is active if:
+    // 1. Build has VITE_DEMO_MODE=true, OR
+    // 2. Token is 'demo-token' (fallback for network error mode)
+    return IS_DEMO_MODE_BUILD || getToken() === 'demo-token';
+  });
 
   const login = useCallback(async (username: string, password: string) => {
     try {
@@ -39,11 +47,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(result.accessToken);
       setStoredUser(result.user);
       setUser(result.user);
-      setDemoMode(false);
+      // In demo mode build, always set demoMode to true
+      setDemoMode(IS_DEMO_MODE_BUILD || result.accessToken === 'demo-token');
     } catch (err) {
-      // Offline/demo fallback so the dashboard is always demonstrable.
+      // If this is a demo mode build, show the actual error
+      if (IS_DEMO_MODE_BUILD) {
+        throw err;
+      }
+      
+      // Offline/demo fallback for non-demo builds
       const key = username.trim().toLowerCase();
-      if (isNetworkError(err) && DEMO_PASSWORDS[key] === password) {
+      if (DEMO_PASSWORDS[key] === password) {
         const demoUser = DEMO_USERS[key];
         setToken('demo-token');
         setStoredUser(demoUser);
@@ -59,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setStoredUser(null);
     setUser(null);
-    setDemoMode(false);
+    setDemoMode(IS_DEMO_MODE_BUILD);
   }, []);
 
   const value = useMemo(() => ({ user, demoMode, login, logout }), [user, demoMode, login, logout]);

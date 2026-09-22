@@ -1,7 +1,13 @@
+// Import demo adapter
+import { demoApi } from './demoAdapter';
+
 const API_BASE: string = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api';
 
 const TOKEN_KEY = 'wasteflow_token';
 const USER_KEY = 'wasteflow_user';
+
+// Demo mode detection
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
 export class ApiError extends Error {
   readonly code: string;
@@ -36,8 +42,97 @@ interface Envelope<T> {
   error?: { code?: string; message?: string; field?: string };
 }
 
+/** Route demo API requests to the demo adapter */
+async function demoRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const url = new URL(path, 'http://localhost');
+  const pathname = url.pathname;
+  const method = init.method?.toUpperCase() ?? 'GET';
+  const body = init.body ? JSON.parse(init.body as string) : undefined;
+
+  // Login
+  if (pathname === '/auth/login' && method === 'POST') {
+    return await demoApi.login(body.username, body.password) as T;
+  }
+
+  // Dashboard
+  if (pathname === '/dashboard/summary') return await demoApi.getDashboardSummary() as T;
+  if (pathname === '/dashboard/by-lga') return await demoApi.getDashboardByLga() as T;
+  if (pathname === '/dashboard/by-category') return await demoApi.getDashboardByCategory() as T;
+  if (pathname === '/dashboard/trends') return await demoApi.getDashboardTrends() as T;
+  if (pathname === '/dashboard/outcome') return await demoApi.getDashboardOutcome() as T;
+  if (pathname === '/dashboard/capacity') return await demoApi.getDashboardCapacity() as T;
+
+  // Trips
+  if (pathname === '/trips') return await demoApi.getTrips() as T;
+
+  // Loads
+  if (pathname === '/loads' && method === 'GET') {
+    const searchParams = url.searchParams;
+    if (searchParams.has('q')) {
+      return await demoApi.searchLoads(searchParams.get('q')!) as T;
+    }
+    return await demoApi.getLoads() as T;
+  }
+  if (pathname.match(/\/loads\/[^/]+\/receive/) && method === 'POST') {
+    const loadCode = pathname.split('/')[2];
+    await demoApi.receiveLoad(loadCode, body);
+    return undefined as T;
+  }
+  if (pathname.match(/\/loads\/[^/]+\/process/) && method === 'POST') {
+    const loadCode = pathname.split('/')[2];
+    await demoApi.processLoad(loadCode, body);
+    return undefined as T;
+  }
+  if (pathname.match(/\/loads\/[^/]+\/trace/) && method === 'GET') {
+    const loadCode = pathname.split('/')[2];
+    return await demoApi.getLoadTrace(loadCode) as T;
+  }
+
+  // Transfers
+  if (pathname === '/transfers' && method === 'GET') return await demoApi.getTransfers() as T;
+  if (pathname === '/transfers' && method === 'POST') {
+    await demoApi.createTransfer(body);
+    return undefined as T;
+  }
+  if (pathname.match(/\/transfers\/[^/]+\/receive/) && method === 'POST') {
+    const transferId = pathname.split('/')[2];
+    await demoApi.receiveTransfer(transferId, body);
+    return undefined as T;
+  }
+
+  // Exceptions
+  if (pathname === '/exceptions' && method === 'GET') return await demoApi.getExceptions() as T;
+  if (pathname === '/exceptions/summary' && method === 'GET') return await demoApi.getExceptionsSummary() as T;
+  if (pathname.match(/\/exceptions\/[^/]+/) && method === 'PATCH') {
+    const exceptionId = pathname.split('/')[2];
+    await demoApi.updateException(exceptionId, body);
+    return undefined as T;
+  }
+
+  // Audit Logs
+  if (pathname === '/audit-logs' && method === 'GET') return await demoApi.getAuditLogs() as T;
+
+  // Reports
+  if (pathname.match(/\/reports\/[^/]+/) && method === 'GET') {
+    const reportType = pathname.split('/')[2];
+    return await demoApi.getReport(reportType) as T;
+  }
+
+  // Reconciliation
+  if (pathname === '/reconciliation' && method === 'GET') return await demoApi.getReconciliation() as T;
+
+  // Default: return empty data for unimplemented endpoints
+  console.warn(`Demo adapter: unimplemented endpoint ${method} ${pathname}`);
+  return undefined as T;
+}
+
 /** Single request helper. Throws ApiError for domain errors, TypeError for network failures. */
 export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  // Use demo adapter when in demo mode
+  if (DEMO_MODE) {
+    return await demoRequest<T>(path, init);
+  }
+
   const token = getToken();
   const headers: Record<string, string> = {
     Accept: 'application/json',
